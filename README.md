@@ -79,8 +79,11 @@ lah -tr
 lah -g
 lah -tg
 
-# Combine flags
-lah -tg -r
+# List a specific directory
+lah /path/to/directory
+
+# Combine flags with directory
+lah /path/to/directory -t
 ```
 
 ## Flags
@@ -88,6 +91,7 @@ lah -tg -r
 - `-t, --sort-modified` — sort by modified time (newest first)
 - `-r, --reverse` — reverse sort order
 - `-g, --git` — show git status inline (+added/-deleted, (clean) when unchanged)
+- `-a, --author` — show file author/owner
 
 ## License
 

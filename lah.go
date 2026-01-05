@@ -13,10 +13,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"unicode/utf8"
 
@@ -37,12 +39,14 @@ type FileInfo struct {
 	IsDir     bool
 	IsHidden  bool
 	GitStatus string
+	Author    string
 }
 
 type Config struct {
 	SortModified bool
 	Reverse      bool
 	ShowGit      bool
+	ShowAuthor   bool
 }
 
 func main() {
@@ -72,6 +76,7 @@ Version: v1.0.0`,
 	rootCmd.Flags().BoolVarP(&config.SortModified, "sort-modified", "t", false, "sort by modified time (newest first)")
 	rootCmd.Flags().BoolVarP(&config.Reverse, "reverse", "r", false, "reverse sort order")
 	rootCmd.Flags().BoolVarP(&config.ShowGit, "git", "g", false, "show git status inline")
+	rootCmd.Flags().BoolVarP(&config.ShowAuthor, "author", "a", false, "show file author/owner")
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		showColoredHelp(cmd)
 	})
@@ -108,6 +113,10 @@ func listDirectory(path string, config Config) error {
 
 		if config.ShowGit {
 			fileInfo.GitStatus = getGitStatus(fileInfo.Path)
+		}
+
+		if config.ShowAuthor {
+			fileInfo.Author = formatAuthor(info)
 		}
 
 		files = append(files, fileInfo)
@@ -245,6 +254,9 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 	if config.ShowGit {
 		headers = append(headers, "Git")
 	}
+	if config.ShowAuthor {
+		headers = append(headers, "Author")
+	}
 	data[0] = headers
 
 	for i, file := range files {
@@ -257,11 +269,14 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 		if config.ShowGit {
 			row = append(row, formatGitStatus(file.GitStatus))
 		}
+		if config.ShowAuthor {
+			row = append(row, file.Author)
+		}
 		data[i+1] = row
 	}
 
 	displayWidths := calculateDisplayWidths(data)
-	mins, maxs := columnConstraints(config.ShowGit)
+	mins, maxs := columnConstraints(config.ShowGit, config.ShowAuthor)
 	for i := range displayWidths {
 		if i < len(mins) && mins[i] > 0 && displayWidths[i] < mins[i] {
 			displayWidths[i] = mins[i]
@@ -356,11 +371,15 @@ func calculateDisplayWidths(data [][]string) []int {
 	return widths
 }
 
-func columnConstraints(showGit bool) ([]int, []int) {
-	// Columns: Name, Size, Modified, Perms, (Git)
+func columnConstraints(showGit bool, showAuthor bool) ([]int, []int) {
+	// Columns: Name, Size, Modified, Perms, (Git), (Author)
 	mins := []int{15, 6, 10, 10}
 	maxs := []int{50, 10, 15, 12}
 	if showGit {
+		mins = append(mins, 6)
+		maxs = append(maxs, 12)
+	}
+	if showAuthor {
 		mins = append(mins, 6)
 		maxs = append(maxs, 12)
 	}
@@ -544,6 +563,15 @@ func formatGitStatus(status string) string {
 	return color.New(color.FgYellow).Sprint(status)
 }
 
+func formatAuthor(fileInfo os.FileInfo) string {
+	if stat, ok := fileInfo.Sys().(*syscall.Stat_t); ok {
+		if u, err := user.LookupId(strconv.Itoa(int(stat.Uid))); err == nil {
+			return color.New(color.FgWhite).Sprint(u.Username)
+		}
+	}
+	return color.New(color.FgWhite).Sprint("unknown")
+}
+
 func showColoredHelp(_ *cobra.Command) {
 	fmt.Printf("\n%s %s\n\n",
 		color.New(color.FgCyan, color.Bold).Sprint("lah v1.0.0"),
@@ -563,6 +591,7 @@ func showColoredHelp(_ *cobra.Command) {
 		{"-t, --sort-modified", "sort by modified time (newest first)"},
 		{"-r, --reverse", "reverse sort order"},
 		{"-g, --git", "show git status inline"},
+		{"-a, --author", "show file author/owner"},
 		{"-h, --help", "show this help message"},
 	}
 
@@ -580,6 +609,8 @@ func showColoredHelp(_ *cobra.Command) {
 		"lah -tr",
 		"lah -g",
 		"lah -tg",
+		"lah -a",
+		"lah -ta",
 	}
 
 	for _, ex := range examples {
