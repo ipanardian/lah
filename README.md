@@ -4,6 +4,10 @@
 [![Go](https://img.shields.io/badge/go-v1.25.x-blue.svg)](https://gitter.im/ipanardian/lah)
 [![GitHub license](https://img.shields.io/badge/license-MIT-red.svg)](https://github.com/ipanardian/lah/blob/main/LICENSE)
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="lah screenshot" width="600">
+</p>
+
 A modern, colorful replacement for the Unix `ls -lah` command with box-drawn tables and git integration.
 
 ## Features
