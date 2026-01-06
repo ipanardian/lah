@@ -53,7 +53,7 @@ detect_os_arch() {
 }
 
 get_latest_version() {
-    VERSION=$(curl -s "$LATEST_RELEASE_URL" | grep '"tag_name":' | sed -E 's/.*"tag_name": *"v?([^"]*).*/\1/')
+    VERSION=$(curl -s "$LATEST_RELEASE_URL" | grep '"tag_name":' | sed -r 's/.*"tag_name": *"v?([^"]*).*/\1/')
     if [ -z "$VERSION" ]; then
         print_error "Failed to fetch latest version"
         exit 1
