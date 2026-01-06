@@ -1,3 +1,4 @@
+// Package table provides a simple ASCII table formatter with customizable borders and colors.
 package table
 
 import (
@@ -155,7 +156,7 @@ func (t *Table) Print() {
 
 func (t *Table) printTopBorder(bc borderChars) {
 	line := bc.topLeft
-	for i := 0; i < len(t.columnWidths); i++ {
+	for i := range t.columnWidths {
 		line += strings.Repeat(bc.horizontal, t.columnWidths[i]+2)
 		if i < len(t.columnWidths)-1 {
 			line += bc.topTee
@@ -167,7 +168,7 @@ func (t *Table) printTopBorder(bc borderChars) {
 
 func (t *Table) printBottomBorder(bc borderChars) {
 	line := bc.bottomLeft
-	for i := 0; i < len(t.columnWidths); i++ {
+	for i := range t.columnWidths {
 		line += strings.Repeat(bc.horizontal, t.columnWidths[i]+2)
 		if i < len(t.columnWidths)-1 {
 			line += bc.bottomTee
@@ -179,7 +180,7 @@ func (t *Table) printBottomBorder(bc borderChars) {
 
 func (t *Table) printSeparator(bc borderChars) {
 	line := bc.leftTee
-	for i := 0; i < len(t.columnWidths); i++ {
+	for i := range t.columnWidths {
 		line += strings.Repeat(bc.horizontal, t.columnWidths[i]+2)
 		if i < len(t.columnWidths)-1 {
 			line += bc.middle
@@ -194,13 +195,11 @@ func (t *Table) calculateColumnWidths() {
 		return
 	}
 
-	rows := len(t.data)
-	cols := len(t.data[0])
-	t.columnWidths = make([]int, cols)
+	t.columnWidths = make([]int, len(t.data[0]))
 
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
-			width := utf8.RuneCountInString(t.data[i][j])
+	for _, row := range t.data {
+		for j, cell := range row {
+			width := utf8.RuneCountInString(cell)
 			if width > t.columnWidths[j] {
 				t.columnWidths[j] = width
 			}
@@ -256,14 +255,8 @@ func (t *Table) printRow(rowIndex int, bc borderChars, isHeader bool) {
 		var cellContent string
 		if cellWidth > maxWidth {
 			truncated := truncateString(cell, maxWidth)
-			truncatedWidth := utf8.RuneCountInString(stripANSI(truncated))
-			if truncatedWidth > maxWidth {
-				truncatedWidth = maxWidth
-			}
-			padding := maxWidth - truncatedWidth
-			if padding < 0 {
-				padding = 0
-			}
+			truncatedWidth := min(utf8.RuneCountInString(stripANSI(truncated)), maxWidth)
+			padding := max(maxWidth-truncatedWidth, 0)
 			cellContent = " " + truncated + strings.Repeat(" ", padding) + " "
 		} else {
 			padding := maxWidth - cellWidth

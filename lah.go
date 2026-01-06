@@ -286,7 +286,6 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 		}
 	}
 
-	// Ensure terminal can display at least the minimum widths
 	minContentWidth := 0
 	for i := range displayWidths {
 		minContentWidth += lookupMin(mins, i, 4)
@@ -297,7 +296,6 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 		return
 	}
 
-	// Adjust widths to fit terminal
 	totalContentWidth := 0
 	for _, w := range displayWidths {
 		totalContentWidth += w
@@ -310,7 +308,7 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 		totalShrinkable := 0
 
 		for i, w := range displayWidths {
-			if i != 1 && i != 3 { // Don't shrink Size and Perms columns
+			if i != 1 && i != 3 {
 				minWidth := lookupMin(mins, i, 4)
 				if w-minWidth > 0 {
 					totalShrinkable += w - minWidth
@@ -318,9 +316,8 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 			}
 		}
 
-		// Shrink columns proportionally
 		for i := range displayWidths {
-			if i != 1 && i != 3 { // Don't shrink Size and Perms columns
+			if i != 1 && i != 3 {
 				minWidth := lookupMin(mins, i, 4)
 				shrinkable := displayWidths[i] - minWidth
 				if shrinkable > 0 && totalShrinkable > 0 {
@@ -329,7 +326,6 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 						shrinkAmount = shrinkable
 					}
 					displayWidths[i] -= shrinkAmount
-					// Ensure we don't go below minimum
 					if displayWidths[i] < minWidth {
 						displayWidths[i] = minWidth
 					}
@@ -343,8 +339,8 @@ func printTable(files []FileInfo, now time.Time, config Config) {
 	table := table.NewTableWithWidths(data, displayWidths)
 	table.SetBorderStyle(0)
 	table.SetHeaderStyle(1)
-	table.SetHeaderColor(color.New(color.FgCyan, color.Bold))
-	table.SetBorderColor(color.New(color.FgGreen))
+	table.SetHeaderColor(color.New(color.FgMagenta, color.Bold))
+	table.SetBorderColor(color.New(color.FgMagenta))
 
 	table.Print()
 }
@@ -354,13 +350,11 @@ func calculateDisplayWidths(data [][]string) []int {
 		return nil
 	}
 
-	rows := len(data)
-	cols := len(data[0])
-	widths := make([]int, cols)
+	widths := make([]int, len(data[0]))
 
-	for i := range rows {
-		for j := range cols {
-			displayText := stripANSI(data[i][j])
+	for _, row := range data {
+		for j, cell := range row {
+			displayText := stripANSI(cell)
 			width := utf8.RuneCountInString(displayText)
 			if width > widths[j] {
 				widths[j] = width
