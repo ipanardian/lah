@@ -36,19 +36,6 @@ Or with wget:
 wget -qO- https://raw.githubusercontent.com/ipanardian/lah/main/install.sh | sudo bash
 ```
 
-### Manual Binary Download
-
-Download the latest release from GitHub:
-- [Linux (x86_64)](https://github.com/ipanardian/lah/releases/latest/download/lah-linux-amd64)
-- [macOS (Intel)](https://github.com/ipanardian/lah/releases/latest/download/lah-darwin-amd64)
-- [macOS (Apple Silicon)](https://github.com/ipanardian/lah/releases/latest/download/lah-darwin-arm64)
-
-Then make it executable and move to your PATH:
-```bash
-chmod +x lah-*
-sudo mv lah-* /usr/local/bin/lah
-```
-
 ### Option 2: Build from Source
 
 ```bash
