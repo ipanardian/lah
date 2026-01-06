@@ -28,12 +28,12 @@ A modern, colorful replacement for the Unix `ls -lah` command with box-drawn tab
 
 **macOS and Linux:**
 ```bash
-curl -sSL https://raw.githubusercontent.com/ipanardian/lah/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/ipanardian/lah/main/install.sh | sudo bash
 ```
 
 Or with wget:
 ```bash
-wget -qO- https://raw.githubusercontent.com/ipanardian/lah/main/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/ipanardian/lah/main/install.sh | sudo bash
 ```
 
 ### Manual Binary Download
